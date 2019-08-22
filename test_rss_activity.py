@@ -17,5 +17,14 @@ class TestRssActivity(unittest.TestCase):
         expected = datetime(1970, 1, 1, 0, 0)
         self.assertEquals(actual, expected)
 
+    def test_get_date_missing_attribute(self):
+        class DummyObject():
+            pass
+
+        obj = DummyObject()
+        actual = rss_activity.get_date(obj, 'epoch')
+        expected = None
+        self.assertEquals(actual, expected)
+
 if __name__ == '__main__':
     unittest.main()

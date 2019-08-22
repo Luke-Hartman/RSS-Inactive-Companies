@@ -12,3 +12,20 @@ def get_date(obj, attribute_name):
     return None
   else:
     return datetime.fromtimestamp(mktime(time_struct))
+
+def max_date(a, b):
+  """Returns the later datetime.datetime between a and b.
+
+  If both a and b are None, it returns None.
+  If only a or b is None, it returns the other.
+  Otherwise it returns the later date.
+
+  Args:
+    a: The first datetime.datetime to compare.
+    b: The second datetime.datetime to compare.
+  """
+  if a is None:
+    return b
+  if b is None:
+    return a
+  return max(a, b)

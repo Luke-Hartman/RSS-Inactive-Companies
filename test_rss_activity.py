@@ -316,6 +316,12 @@ class TestGetCompanyLastModified(unittest.TestCase):
       # There should be two warnings from feeds and one from company.
       self.assertEqual(len(w), 3)
 
+  def test_get_company_last_modified_no_feeds(self):
+    feeds = []
+    actual = rss_activity.get_company_last_modified(feeds, 'My Company')
+    expected = None
+    self.assertEqual(actual, expected)
+
 
 if __name__ == '__main__':
     unittest.main()

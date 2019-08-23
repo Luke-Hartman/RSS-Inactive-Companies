@@ -13,6 +13,7 @@ def get_date(obj, attribute_name):
   else:
     return datetime.fromtimestamp(mktime(time_struct))
 
+
 def max_date(a, b):
   """Returns the later datetime.datetime between a and b.
 
@@ -29,3 +30,27 @@ def max_date(a, b):
   if b is None:
     return a
   return max(a, b)
+
+
+def get_entry_last_modified(entry):
+  """Returns a datetime.datetime for when the entry was last modified.
+
+  If no date is found, returns None.
+
+  This method will look at the pubDate for an item in an RSS feed.
+
+  It does not check the lastBuildDate. That is because it does not appear that
+  lastBuildDate is an appropriate field for an item, even though feedparser
+  parses it without complaint. The documentation on entries[i].updated is
+  unclear,
+  https://pythonhosted.org/feedparser/reference-entry-updated.html?highlight=updated
+  but it seems compatible with it existing only because there was once a bug
+  where that field was created instead of entries[i].published. It does not
+  seem to be used in any of the RSS feeds I check and sources such as
+  https://validator.w3.org/feed/docs/rss2.html#optionalChannelElements list
+  it only as an element at the channel level.
+
+  Args:
+    entry: A feedparser.FeedParserDict representing an entry in a RSS feed.
+  """
+  return get_date(entry, 'published_parsed')

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import feedparser
 import rss_activity
@@ -321,6 +321,78 @@ class TestGetCompanyLastModified(unittest.TestCase):
     actual = rss_activity.get_company_last_modified(feeds, 'My Company')
     expected = None
     self.assertEqual(actual, expected)
+
+
+class TestGetInactiveCompanies(unittest.TestCase):
+
+  def test_get_inactive_companies(self):
+    company_to_feeds = {
+      'My Company': [
+        """
+        <rss version="2.0">
+          <channel>
+            <title>My Feed</title>
+            <pubDate>Sat, 3 Jan 1970</pubDate>
+          </channel>
+          <item>
+            <title>Item 1</title>
+          </item>
+          <item>
+            <title>Item 2</title>
+          </item>
+        </rss>
+        """,
+        """
+        <rss version="2.0">
+          <channel>
+            <title>My Other Feed</title>
+          </channel>
+          <item>
+            <title>Item 1</title>
+            <pubDate>Fri, 2 Jan 1970</pubDate>
+          </item>
+        </rss>
+        """],
+      'My Other Company': [],
+      'My Other Other Company': [
+      """
+      <rss version="2.0">
+        <channel>
+          <title>My Feed</title>
+        </channel>
+        <item>
+          <title>Item 1</title>
+          <pubDate>Fri, 2 Jan 1970</pubDate>
+        </item>
+        <item>
+          <title>Item 2</title>
+        </item>
+      </rss>
+      """],
+      'My Other Other Other Company': [
+      """
+      <rss version="2.0">
+        <channel>
+          <title>My Feed</title>
+        </channel>
+        <item>
+          <title>Item 1</title>
+          <pubDate>Thu, 1 Jan 1970</pubDate>
+        </item>
+        <item>
+          <title>Item 2</title>
+        </item>
+      </rss>
+      """]
+    }
+    latest_activity_threshold = datetime(1970, 1, 1, 12, 0)
+    now = datetime.now()
+    delta = now - latest_activity_threshold
+    min_days_inactive = delta.total_seconds()/60/60/24
+    actual = rss_activity.get_inactive_companies(
+        company_to_feeds, min_days_inactive)
+    expected = ['My Other Company', 'My Other Other Other Company']
+    self.assertCountEqual(actual, expected)
 
 
 if __name__ == '__main__':

@@ -94,6 +94,7 @@ def get_feed_last_modified(feed):
     warnings.warn('No date found for "%s"!' % title)
   return feed_last_modified
 
+
 def get_company_last_modified(feeds, company='(untitled)'):
   """Returns a datetime.datetime for when the company was last modified.
 
@@ -116,3 +117,29 @@ def get_company_last_modified(feeds, company='(untitled)'):
   if company_last_modified is None:
     warnings.warn('No date found for "%s"!' % company)
   return company_last_modified
+
+
+def get_inactive_companies(company_to_feeds, min_days_inactive):
+  """Returns a list of all companies that have been inactive for a given number.
+
+  If a date is not able to be determined for a company, it is considered to have
+  been inactive for long enough.
+
+  Args:
+    company_to_feeds: A dictionary from an object representing a company to a
+      list of RSS feeds. The RSS feeds can be represented as a list of URLs,
+      files, streams or strings. See
+      https://pythonhosted.org/feedparser/introduction.html for more details.
+    min_days_inactive: The minimum number of days since the latest activity on
+      any of the given feeds for a company to be included in the output. It does
+      not have to be an integer number of days. For instance, 1.5 would mean any
+      companies with no activity in the last 36 hours.
+  """
+  latest_activity_threshold = datetime.now() - timedelta(days=min_days_inactive)
+
+  inactive_companies = []
+  for company, feeds in company_to_feeds.items():
+    last_modified = get_company_last_modified(feeds, company)
+    if last_modified is None or last_modified <= latest_activity_threshold:
+      inactive_companies.append(company)
+  return inactive_companies

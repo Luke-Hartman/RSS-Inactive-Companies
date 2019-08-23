@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
 from time import mktime
 
+import feedparser
+import warnings
+
 def get_date(obj, attribute_name):
   """Returns a datetime.datetime if the field exists, otherwise returns None.
 
@@ -54,3 +57,39 @@ def get_entry_last_modified(entry):
     entry: A feedparser.FeedParserDict representing an entry in a RSS feed.
   """
   return get_date(entry, 'published_parsed')
+
+
+def get_feed_last_modified(feed):
+  """Returns a datetime.datetime for when the feed was last modified.
+
+  Returns None if the feed is not parsed correctly, or no valid date is found.
+
+  Unlike the entry level, if the feed does not successfully determine a last
+  modified date, it raises a warning.
+
+  Args:
+    feed: A URL, file, stream, or string representing a RSS feed. See
+      https://pythonhosted.org/feedparser/introduction.html for more details.
+  """
+  d = feedparser.parse(feed)
+
+  title = getattr(d.feed, 'title', str(feed))
+
+  if d.bozo:
+    warnings.warn('There was an error processing "%s": %s' % (
+        title, d.bozo_exception))
+    return None
+
+  updated = get_date(d.feed, 'updated_parsed')
+  published = get_date(d.feed, 'published_parsed')
+  modified = get_date(d, 'modified_parsed')
+
+  feed_last_modified = max_date(max_date(updated, published), modified)
+
+  for entry in d.entries:
+    entry_last_modified = get_entry_last_modified(entry)
+    feed_last_modified = max_date(feed_last_modified, entry_last_modified)
+
+  if feed_last_modified is None:
+    warnings.warn('No date found for "%s"!' % title)
+  return feed_last_modified

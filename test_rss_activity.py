@@ -127,5 +127,110 @@ class TestGetEntryLastModified(unittest.TestCase):
     self.assertCountEqual(actual, expected)
 
 
+class TestGetFeedLastModified(unittest.TestCase):
+
+  def test_get_feed_last_modified(self):
+    feed = """
+    <rss version="2.0">
+      <channel>
+        <title>My Feed</title>
+        <pubDate>Sat, 3 Jan 1970</pubDate>
+      </channel>
+      <item>
+        <title>Item 1</title>
+      </item>
+      <item>
+        <title>Item 2</title>
+        <pubDate>Fri, 2 Jan 1970</pubDate>
+      </item>
+      <item>
+        <title>Item 3</title>
+      </item>
+      <item>
+        <title>Item 4</title>
+        <pubDate>Thu, 1 Jan 1970</pubDate>
+      </item>
+    </rss>
+    """
+    actual = rss_activity.get_feed_last_modified(feed)
+    expected = datetime(1970, 1, 3, 0, 0)
+    self.assertEqual(actual, expected)
+
+  def test_get_feed_last_modified_only_published_date(self):
+    feed = """
+    <rss version="2.0">
+      <channel>
+        <title>My Feed</title>
+        <pubDate>Thu, 1 Jan 1970</pubDate>
+      </channel>
+      <item>
+        <title>Item 1</title>
+      </item>
+    </rss>
+    """
+    actual = rss_activity.get_feed_last_modified(feed)
+    expected = datetime(1970, 1, 1, 0, 0)
+    self.assertEqual(actual, expected)
+
+  def test_get_feed_last_modified_only_entry_dates(self):
+    feed = """
+    <rss version="2.0">
+      <channel>
+        <title>My Feed</title>
+      </channel>
+      <item>
+        <title>Item 1</title>
+      </item>
+      <item>
+        <title>Item 2</title>
+        <pubDate>Fri, 2 Jan 1970</pubDate>
+      </item>
+      <item>
+        <title>Item 3</title>
+      </item>
+      <item>
+        <title>Item 4</title>
+        <pubDate>Thu, 1 Jan 1970</pubDate>
+      </item>
+    </rss>
+    """
+    actual = rss_activity.get_feed_last_modified(feed)
+    expected = datetime(1970, 1, 2, 0, 0)
+    self.assertEqual(actual, expected)
+
+  def test_get_feed_last_modified_no_dates(self):
+    feed = """
+    <rss version="2.0">
+      <channel>
+        <title>My Feed</title>
+      </channel>
+      <item>
+        <title>Item 1</title>
+      </item>
+      <item>
+        <title>Item 2</title>
+      </item>
+    </rss>
+    """
+    with self.assertWarnsRegex(UserWarning, 'No date found for "My Feed"!'):
+      actual = rss_activity.get_feed_last_modified(feed)
+      expected = None
+      self.assertEqual(actual, expected)
+
+  def test_get_feed_fail_parsing(self):
+    feed = """
+    <rs version="2.0">
+      <channel>
+        <title>My Feed</title>
+      </channel>
+    </rss>
+    """
+    with self.assertWarnsRegex(
+          UserWarning, 'There was an error processing "My Feed":'):
+      actual = rss_activity.get_feed_last_modified(feed)
+      expected = None
+      self.assertEqual(actual, expected)
+
+
 if __name__ == '__main__':
     unittest.main()

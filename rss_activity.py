@@ -93,3 +93,26 @@ def get_feed_last_modified(feed):
   if feed_last_modified is None:
     warnings.warn('No date found for "%s"!' % title)
   return feed_last_modified
+
+def get_company_last_modified(feeds, company='(untitled)'):
+  """Returns a datetime.datetime for when the company was last modified.
+
+  If no valid date is found, returns None.
+
+  Similar to get_feed_last_modified, this raises a warning if it is unable to
+  determine a last modified date.
+
+  Args:
+    feeds: A list of URLs, files, streams, or strings representing RSS feeds.
+      See https://pythonhosted.org/feedparser/introduction.html for more
+      details.
+    company: An optional representation of a company, used for warning when a
+      date is unable to be determined.
+  """
+  company_last_modified = None
+  for feed in feeds:
+    feed_last_modified = get_feed_last_modified(feed)
+    company_last_modified = max_date(company_last_modified, feed_last_modified)
+  if company_last_modified is None:
+    warnings.warn('No date found for "%s"!' % company)
+  return company_last_modified

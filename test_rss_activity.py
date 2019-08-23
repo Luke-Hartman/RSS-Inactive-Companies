@@ -4,6 +4,7 @@ import feedparser
 import rss_activity
 import time
 import unittest
+import warnings
 
 
 class TestGetDate(unittest.TestCase):
@@ -230,6 +231,90 @@ class TestGetFeedLastModified(unittest.TestCase):
       actual = rss_activity.get_feed_last_modified(feed)
       expected = None
       self.assertEqual(actual, expected)
+
+
+class TestGetCompanyLastModified(unittest.TestCase):
+
+  def test_get_company_last_modified(self):
+    feeds = [
+        """
+        <rss version="2.0">
+          <channel>
+            <title>My Feed</title>
+            <pubDate>Sat, 3 Jan 1970</pubDate>
+          </channel>
+          <item>
+            <title>Item 1</title>
+          </item>
+          <item>
+            <title>Item 2</title>
+            <pubDate>Fri, 2 Jan 1970</pubDate>
+          </item>
+          <item>
+            <title>Item 3</title>
+          </item>
+          <item>
+            <title>Item 4</title>
+            <pubDate>Thu, 1 Jan 1970</pubDate>
+          </item>
+        </rss>
+        """,
+        """
+        <rss version="2.0">
+          <channel>
+            <title>My Other Feed</title>
+          </channel>
+          <item>
+            <title>Item 1</title>
+          </item>
+          <item>
+            <title>Item 2</title>
+            <pubDate>Fri, 2 Jan 1970</pubDate>
+          </item>
+          <item>
+            <title>Item 3</title>
+          </item>
+          <item>
+            <title>Item 4</title>
+            <pubDate>Thu, 1 Jan 1970</pubDate>
+          </item>
+        </rss>
+        """]
+    actual = rss_activity.get_company_last_modified(feeds)
+    expected = datetime(1970, 1, 3, 0, 0)
+    self.assertEqual(actual, expected)
+
+  def test_get_company_last_modified_no_dates(self):
+    feeds = [
+        """
+        <rss version="2.0">
+          <channel>
+            <title>My Feed</title>
+          </channel>
+          <item>
+            <title>Item 1</title>
+          </item>
+          <item>
+            <title>Item 2</title>
+          </item>
+        </rss>
+        """,
+        """
+        <rss version="2.0">
+          <channel>
+            <title>My Other Feed</title>
+          </channel>
+          <item>
+            <title>Item 1</title>
+          </item>
+        </rss>
+        """]
+    with warnings.catch_warnings(record=True) as w:
+      actual = rss_activity.get_company_last_modified(feeds, 'My Company')
+      expected = None
+      self.assertEqual(actual, expected)
+      # There should be two warnings from feeds and one from company.
+      self.assertEqual(len(w), 3)
 
 
 if __name__ == '__main__':

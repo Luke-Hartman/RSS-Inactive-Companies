@@ -120,7 +120,7 @@ def get_company_last_modified(feeds, company='(untitled)'):
 
 
 def get_inactive_companies(company_to_feeds, min_days_inactive):
-  """Returns a list of all companies that have been inactive for a given number.
+  """Returns a list of companies that have been inactive for min_days_inactive.
 
   If a date is not able to be determined for a company, it is considered to have
   been inactive for long enough.
